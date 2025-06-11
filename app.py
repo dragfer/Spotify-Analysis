@@ -6,18 +6,19 @@ from sklearn.cluster import KMeans
 import numpy as np
 import openai
 import pandas as pd
+from urllib.parse import urlparse, parse_qs
 from dotenv import load_dotenv
+
 load_dotenv()
 
-
 # ---- CONFIGURATION ----
-# Replace with your credentials
 SPOTIPY_CLIENT_ID = '16109f89727a4d24be39a9e488746953'
 SPOTIPY_CLIENT_SECRET = '1ffd776c89e649deba6617d8366ff76b'
 SPOTIPY_REDIRECT_URI = 'https://spotlightify.streamlit.app/callback'
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
 SCOPE = 'user-top-read'
+
+# Replace with your actual OpenAI key or use Streamlit secrets
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # ---- HELPER FUNCTIONS ----
 def authenticate():
@@ -26,11 +27,25 @@ def authenticate():
         client_secret=SPOTIPY_CLIENT_SECRET,
         redirect_uri=SPOTIPY_REDIRECT_URI,
         scope=SCOPE,
-        show_dialog= True,
-        cache_path=".cache"
+        show_dialog=True
     )
-    sp = spotipy.Spotify(auth_manager=auth_manager)
-    return sp
+    auth_url = auth_manager.get_authorize_url()
+    st.markdown(f"[Click here to authenticate with Spotify]({auth_url})")
+
+    code_input = st.text_input("Paste the full redirect URL after logging in:")
+
+    if code_input:
+        try:
+            parsed_url = urlparse(code_input)
+            code = parse_qs(parsed_url.query).get("code")[0]
+            token_info = auth_manager.get_access_token(code)
+            sp = spotipy.Spotify(auth=token_info["access_token"])
+            return sp
+        except Exception as e:
+            st.error("Authentication failed. Please double-check the URL.")
+            st.text(f"Error: {e}")
+            return None
+    return None
 
 def fetch_top_tracks(sp, limit=20):
     results = sp.current_user_top_tracks(limit=limit, time_range='medium_term')
@@ -64,11 +79,13 @@ def get_gpt_judgment(stats_summary):
 st.set_page_config(page_title="Judge My Music Taste", layout="centered")
 st.title("🎧 Judge My Music Taste - AI Style")
 
-if st.button("Authenticate with Spotify"):
-    try:
-        sp = authenticate()
-        st.success("Authenticated! Fetching your top tracks...")
+st.write("### Step 1: Authenticate with Spotify")
 
+sp = authenticate()
+
+if sp:
+    try:
+        st.success("Authenticated! Fetching your top tracks...")
         track_ids, track_names = fetch_top_tracks(sp)
         st.write("### Your Top Tracks")
         st.write(track_names)
