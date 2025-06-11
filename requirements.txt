@@ -1,0 +1,7 @@
+streamlit
+spotipy
+pandas
+matplotlib
+sci-kitlearn
+openai
+numpy
