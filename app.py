@@ -6,12 +6,15 @@ from sklearn.cluster import KMeans
 import numpy as np
 import openai
 import pandas as pd
+from dotenv import load_dotenv
+load_dotenv()
+
 
 # ---- CONFIGURATION ----
 # Replace with your credentials
 SPOTIPY_CLIENT_ID = '16109f89727a4d24be39a9e488746953'
 SPOTIPY_CLIENT_SECRET = '1ffd776c89e649deba6617d8366ff76b'
-SPOTIPY_REDIRECT_URI = 'https://localhost:8888/callback'
+SPOTIPY_REDIRECT_URI = 'https://spotlightify.streamlit.app/callback'
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 SCOPE = 'user-top-read'
