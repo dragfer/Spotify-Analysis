@@ -1,7 +1,7 @@
 streamlit
 spotipy
 pandas
-matplotlib
+numpy
 scikit-learn
 openai
-numpy
+python-dotenv
