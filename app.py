@@ -25,7 +25,9 @@ def authenticate():
         client_id=SPOTIPY_CLIENT_ID,
         client_secret=SPOTIPY_CLIENT_SECRET,
         redirect_uri=SPOTIPY_REDIRECT_URI,
-        scope=SCOPE
+        scope=SCOPE,
+        show_dialog= True,
+        cache_path=".cache"
     )
     sp = spotipy.Spotify(auth_manager=auth_manager)
     return sp
